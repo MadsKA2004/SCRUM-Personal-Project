@@ -1,4 +1,8 @@
+import java.time.LocalDate;
+import java.util.List;
+
 public class UI {
+    private Club club;
 
     public UI(){
 
@@ -111,6 +115,66 @@ public class UI {
                 case 1 -> IO.println("Tilmeld");
                 case 2 -> IO.println("Konto-balance");
                 default -> IO.println("Ugyldigt valg.");
+            }
+        }
+    }
+
+    private void registerMember() {
+        IO.println("\n—————Register nyt medlem—————");
+
+        int memberId = getUniqueMemberId();
+        String name = IO.readln("Indtast navn: ");
+        String address = IO.readln("Indtast adresse: ");
+        String phoneNumber = IO.readln("Indtast telefonnummer: ");
+        String email = IO.readln("Indtast email: ");
+        LocalDate birthday = LocalDate.parse(IO.readln("Indtast fødselsdato (yyyy-mm-dd): "));
+        MemberShip memberShip = chooseMemberShip();
+
+
+        Member member = new Member(memberId, name, address, phoneNumber, email, birthday, memberShip);
+        club.addMember(member);
+        IO.println(member.getName() + " er registeret med medlemsnummer " + memberId + ".");
+    }
+
+    private int getUniqueMemberId(){
+        while (true) {
+            int id = Integer.parseInt(IO.readln("Indtast medlemsnummer: ").trim());
+            if (club.findMemberByMemberId(id) == null) {
+                return id;
+            }
+            IO.println("Dette medlem findes allerede. Prøv et andet:");
+        }
+    }
+
+    private MemberShip chooseMemberShip() {
+        IO.println("""
+                Vælg medlemskab:
+                1: Passivt medlemskab
+                2. Aktiv - Motionist
+                3: Aktiv - Konkurrencesvømmer""");
+
+        int menuChoice = Integer.parseInt(IO.readln("Vælg (1-3): ").trim());
+
+        return switch (menuChoice) {
+            case 2 -> new MemberShip(SwimmerType.CASUAL); // Motionist
+            case 3 -> new MemberShip(SwimmerType.COMPETITIVE); // Konkurrencesvømmer
+            default -> new MemberShip(); // Opretter passivt medlemskab som standard
+        };
+    }
+
+
+    private void printTop5(Team team, Discipline discipline){
+        IO.println("\n————— Top 5: "  + team.getTeamName() + " (" + discipline + ") —————");
+        List<CompetitionSwimmer> top5 = team.getTop5(discipline);
+
+        if (top5.isEmpty()) {
+            IO.println("Ingen registrerede tider i denne disciplin endnu.");
+        } else {
+            int rank = 1;
+            for (CompetitionSwimmer swimmer : top5) {
+                SwimResult best = swimmer.getBestResult(discipline);
+                IO.println(rank + ". "  + swimmer.getName() + " - " + best);
+                rank++;
             }
         }
     }
